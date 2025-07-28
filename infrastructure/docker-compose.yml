@@ -1,0 +1,260 @@
+version: '3.8'
+
+services:
+  # Products Service
+  products-service:
+    build:
+      context: ../backend/products
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-auth:9099
+      - STORAGE_EMULATOR_HOST=storage:9199
+    depends_on:
+      - firestore
+      - firebase-auth
+      - storage
+    volumes:
+      - ../backend/products:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Stock Service
+  stock-service:
+    build:
+      context: ../backend/stock
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-auth:9099
+    depends_on:
+      - firestore
+      - firebase-auth
+    volumes:
+      - ../backend/stock:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Suppliers Service
+  suppliers-service:
+    build:
+      context: ../backend/suppliers
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-auth:9099
+    depends_on:
+      - firestore
+      - firebase-auth
+    volumes:
+      - ../backend/suppliers:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Customers Service
+  customers-service:
+    build:
+      context: ../backend/customers
+      dockerfile: Dockerfile
+    ports:
+      - "8084:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-auth:9099
+    depends_on:
+      - firestore
+      - firebase-auth
+    volumes:
+      - ../backend/customers:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Reports Service
+  reports-service:
+    build:
+      context: ../backend/reports
+      dockerfile: Dockerfile
+    ports:
+      - "8085:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-auth:9099
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=stock_analytics
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    depends_on:
+      - firestore
+      - firebase-auth
+      - postgres
+    volumes:
+      - ../backend/reports:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Authentication Service
+  auth-service:
+    build:
+      context: ../backend/auth
+      dockerfile: Dockerfile
+    ports:
+      - "8086:8080"
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      - FIRESTORE_EMULATOR_HOST=firestore:8080
+      - FIREBASE_AUTH_EMULATOR_HOST=firebase-auth:9099
+    depends_on:
+      - firestore
+      - firebase-auth
+    volumes:
+      - ../backend/auth:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # Web Frontend
+  web-frontend:
+    build:
+      context: ../frontend/web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+      - REACT_APP_FIREBASE_CONFIG={"apiKey":"demo","authDomain":"demo","projectId":"demo"}
+    volumes:
+      - ../frontend/web:/app
+      - /app/node_modules
+    command: npm run dev
+
+  # API Gateway
+  api-gateway:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - products-service
+      - stock-service
+      - suppliers-service
+      - customers-service
+      - reports-service
+      - auth-service
+
+  # Firebase Emulators
+  firebase-emulator:
+    image: andreysenov/firebase-tools:latest
+    ports:
+      - "4000:4000"   # Emulator UI
+      - "9099:9099"   # Authentication
+      - "8080:8080"   # Firestore
+      - "9199:9199"   # Storage
+      - "5001:5001"   # Functions
+    volumes:
+      - ./firebase:/firebase
+    command: >
+      sh -c "
+        cd /firebase &&
+        firebase emulators:start --only auth,firestore,storage,functions --project demo-project
+      "
+    environment:
+      - FIREBASE_PROJECT=demo-project
+
+  # PostgreSQL for Analytics
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: stock_analytics
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  # Redis for Caching
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+
+  # Elasticsearch for Search
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+
+  # Kibana for Analytics Dashboard
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.11.0
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  # Prometheus for Monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+
+  # Grafana for Dashboards
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+
+volumes:
+  postgres_data:
+  redis_data:
+  elasticsearch_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  default:
+    name: stock-management-network
