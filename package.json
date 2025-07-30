@@ -1,0 +1,39 @@
+{
+  "name": "stock-management-system",
+  "version": "1.0.0",
+  "description": "Stock Management System - Root workspace",
+  "private": true,
+  "workspaces": [
+    "backend/shared",
+    "backend/products",
+    "backend/stock",
+    "backend/suppliers",
+    "backend/customers",
+    "backend/reports",
+    "backend/auth",
+    "frontend/web"
+  ],
+  "scripts": {
+    "dev": "./scripts/dev.sh",
+    "build": "./scripts/build.sh",
+    "test": "./scripts/test.sh",
+    "setup": "./scripts/setup.sh",
+    "docker:up": "cd infrastructure && docker-compose up -d",
+    "docker:down": "cd infrastructure && docker-compose down",
+    "docker:logs": "cd infrastructure && docker-compose logs -f",
+    "firebase:start": "cd infrastructure/firebase && firebase emulators:start",
+    "docs:build": "mkdocs build",
+    "docs:serve": "mkdocs serve",
+    "docs:deploy": "mkdocs gh-deploy",
+    "clean": "rm -rf node_modules backend/*/node_modules frontend/*/node_modules",
+    "fresh": "npm run clean && npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

@@ -1,0 +1,89 @@
+site_name: Stock Management System
+site_description: Complete stock management solution for businesses
+site_author: Stock Management Team
+site_url: https://docs.stockmanagement.com
+
+repo_name: stock-management
+repo_url: https://github.com/org/stock-management
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Configuration: getting-started/configuration.md
+  - Development:
+    - Development Guide: development-guide.md
+    - Architecture: architecture.md
+    - API Reference: api-reference.md
+  - Database:
+    - Schema: database-schema.md
+    - Migrations: database/migrations.md
+  - User Guide:
+    - User Flows: user-flows.md
+    - Features: user-guide/features.md
+    - Workflows: user-guide/workflows.md
+  - Deployment:
+    - Deployment Guide: deployment-guide.md
+    - Infrastructure: deployment/infrastructure.md
+    - Monitoring: deployment/monitoring.md
+  - Troubleshooting:
+    - Common Issues: troubleshooting.md
+    - FAQ: troubleshooting/faq.md
+  - Security:
+    - Security Guide: security.md
+    - Best Practices: security/best-practices.md
+
+plugins:
+  - search
+  - awesome-pages
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/org/stock-management
+    - icon: fontawesome/regular/envelope
+      link: mailto:support@stockmanagement.com
+
+copyright: Copyright &copy; 2024 Stock Management Team
