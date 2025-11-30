@@ -410,13 +410,6 @@ Este projeto está licenciado sob a MIT License - veja o arquivo [LICENSE](LICEN
 - **DevOps** - Infraestrutura e deployment
 - **UX/UI Design** - Design de interfaces
 
-## 📞 Suporte
-
-Para suporte técnico:
-- **Email**: support@stockmanagement.com
-- **Documentation**: [docs.stockmanagement.com](https://docs.stockmanagement.com)
-- **Issues**: [GitHub Issues](https://github.com/org/stock-management/issues)
-
 ---
 
 **Sistema de Gestão de Stock v1.0.0** - Desenvolvido com ❤️ para otimizar a gestão de inventário.
